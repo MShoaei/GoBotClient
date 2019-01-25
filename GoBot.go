@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"github.com/MShoaei/GoBot/components"
+	"github.com/MShoaei/GoBotClient/components"
 )
 
 var junkint int

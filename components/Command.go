@@ -12,6 +12,8 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+var location, _ = time.LoadLocation("")
+
 //Checks data's MD5 with the MD5 of LAST in registry, if the same it ingnores, if diffrent it decodeds the command and parces the commands information
 
 func commandParce(data string) {
@@ -27,7 +29,7 @@ func commandParce(data string) {
 
 			gettime := strings.Split(data, "||")
 
-			then, err := time.Parse(time.RFC1123Z, gettime[0])
+			then, err := time.ParseInLocation(time.RFC1123Z, gettime[0], location)
 			if err != nil {
 				return
 			}
