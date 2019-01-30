@@ -8,7 +8,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/AllenDang/w32"
+	"github.com/MShoaei/w32"
 )
 
 //============================================================

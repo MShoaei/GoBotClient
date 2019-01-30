@@ -7,7 +7,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/AllenDang/w32"
+	"github.com/MShoaei/w32"
 	"github.com/atotto/clipboard"
 )
 
