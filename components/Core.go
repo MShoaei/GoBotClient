@@ -44,6 +44,19 @@ func hideProcWindow(exe string, active string) { //go components.HideProcWindow(
 	}
 }
 
+func getWindowText(hwnd syscall.Handle, str *uint16, maxCount int32) (len int32, err error) {
+	r0, _, e1 := syscall.Syscall(procGetWindowTextW.Addr(), 3, uintptr(hwnd), uintptr(unsafe.Pointer(str)), uintptr(maxCount))
+	len = int32(r0)
+	if len == 0 {
+		if e1 != 0 {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return
+}
+
 func findWindow(title string) syscall.Handle {
 	var hwnd syscall.Handle
 	cb := syscall.NewCallback(func(h syscall.Handle, p uintptr) uintptr {

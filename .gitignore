@@ -4,3 +4,4 @@ Builds
 Profiles
 *.txt
 !WindowsStartupLocations.txt
+personal
