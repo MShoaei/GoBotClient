@@ -35,7 +35,7 @@ func base64Encode(str string) string {
 func base64Decode(str string) string {
 	data, err := base64.StdEncoding.DecodeString(str)
 	if err != nil {
-		newDebugUpdate("Error: None-Valid Base64 String...")
+		// newDebugUpdate("Error: None-Valid Base64 String...")
 		return ""
 	}
 	return string(data)

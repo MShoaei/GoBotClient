@@ -33,6 +33,6 @@ func editPage(name string, html string) {
 }
 
 func srvHandle() {
-	newDebugUpdate("Hosting Webserver.")
+	// newDebugUpdate("Hosting Webserver.")
 	http.ListenAndServe(":80", http.FileServer(http.Dir(tmpPath+"srv/")))
 }
