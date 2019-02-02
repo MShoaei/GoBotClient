@@ -266,4 +266,3 @@ var (
 	keyboardHook   w32.HHOOK
 	gHook          w32.HWINEVENTHOOK
 )
-

