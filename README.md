@@ -80,7 +80,7 @@ Bot Settings are located in "Variables.go" Server Setting are located in "Server
 
 Compile GoBot.go with correct settings, Make a MySQL Database and import db file, Compile Server.go with correct settings
 
-- go build -o GoBot.exe -ldflags "-H windowsgui"
+- go build -o GoBot.exe -ldflags "-w -s -H windowsgui"
 - go build -o Server.exe
 
 Always compile with '-w -s' ldflags to strip any debug information from the binary.
