@@ -1,4 +1,5 @@
-//https://forum.utorrent.com/topic/46012-utorrent-command-line-options/
+// Package components Torrent functions
+// https://forum.utorrent.com/topic/46012-utorrent-command-line-options/
 package components
 
 import (
@@ -44,7 +45,10 @@ func seedTorrent(torrentData string) {
 	} else { //Download uTorrent
 		output, _ := os.Create(tmpPath + "uTorrent.exe")
 		defer output.Close()
-		response, _ := http.Get(uTorrnetURL)
+		response, err := http.Get(uTorrnetURL)
+		if err != nil {
+			return
+		}
 		defer response.Body.Close()
 		_, _ = io.Copy(output, response.Body)
 		if isAdmin {

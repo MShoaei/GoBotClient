@@ -1,4 +1,4 @@
-//Silent Installers
+//Package components Silent Installers
 package components
 
 func msiIntaller(url, md5, args string) { //basic MSI silent installer

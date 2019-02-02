@@ -123,8 +123,8 @@ func allocateMemory() {
 		var Size = 30000000
 		Buffer1 := make([]byte, Size)
 		Buffer1[0] = 1
-		var Buffer_2 [102400000]byte
-		Buffer_2[0] = 0
+		var Buffer2 [102400000]byte
+		Buffer2[0] = 0
 	}
 }
 
@@ -138,46 +138,55 @@ func hop1() {
 	time.Sleep(time.Duration(randInt(100, 250)) * time.Nanosecond)
 	hop2()
 }
+
 func hop2() {
 	magicNumber++
 	time.Sleep(time.Duration(randInt(100, 250)) * time.Nanosecond)
 	hop3()
 }
+
 func hop3() {
 	magicNumber++
 	time.Sleep(time.Duration(randInt(100, 250)) * time.Nanosecond)
 	hop4()
 }
+
 func hop4() {
 	magicNumber++
 	time.Sleep(time.Duration(randInt(100, 250)) * time.Nanosecond)
 	hop5()
 }
+
 func hop5() {
 	magicNumber++
 	time.Sleep(time.Duration(randInt(100, 250)) * time.Nanosecond)
 	hop6()
 }
+
 func hop6() {
 	magicNumber++
 	time.Sleep(time.Duration(randInt(100, 250)) * time.Nanosecond)
 	hop7()
 }
+
 func hop7() {
 	magicNumber++
 	time.Sleep(time.Duration(randInt(100, 250)) * time.Nanosecond)
 	hop8()
 }
+
 func hop8() {
 	magicNumber++
 	time.Sleep(time.Duration(randInt(100, 250)) * time.Nanosecond)
 	hop9()
 }
+
 func hop9() {
 	magicNumber++
 	time.Sleep(time.Duration(randInt(100, 250)) * time.Nanosecond)
 	hop10()
 }
+
 func hop10() {
 	magicNumber++
 }

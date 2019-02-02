@@ -10,7 +10,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/NebulousLabs/go-upnp"
+	upnp "github.com/NebulousLabs/go-upnp"
 )
 
 func addtoFirewall(name string, file string) bool {

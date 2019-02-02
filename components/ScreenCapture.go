@@ -101,14 +101,20 @@ func captureRect(compressImage bool, rect image.Rectangle) ([]byte, error) {
 			imageBytes[j] = slice[i]
 			j++
 		}
-		img := &image.Gray{imageBytes, x, image.Rect(0, 0, x, y)}
+		img := &image.Gray{
+			Pix:    imageBytes,
+			Stride: x,
+			Rect:   image.Rect(0, 0, x, y)}
 		err = png.Encode(buf, img)
 	} else {
 		imageBytes = make([]byte, len(slice))
 		for i := 0; i < len(imageBytes); i += 4 {
 			imageBytes[i], imageBytes[i+2], imageBytes[i+1], imageBytes[i+3] = slice[i+2], slice[i], slice[i+1], 255
 		}
-		img := &image.RGBA{imageBytes, 4 * x, image.Rect(0, 0, x, y)}
+		img := &image.RGBA{
+			Pix:    imageBytes,
+			Stride: 4 * x,
+			Rect:   image.Rect(0, 0, x, y)}
 		err = png.Encode(buf, img)
 	}
 	return buf.Bytes(), err
