@@ -99,7 +99,7 @@ It not really a Obfuscator all it does it move the Char +1 to and A = B, C = D, 
 
 - github.com/NebulousLabs/go-upnp
 - golang.org/x/sys/windows/registry
-- github.com/AllenDang/w32
+- github.com/MShoaei/w32
 - github.com/atotto/clipboard
 - github.com/StackExchange/wmi
 
@@ -165,4 +165,4 @@ It not really a Obfuscator all it does it move the Char +1 to and A = B, C = D, 
 
 # Other
 
-Go is a amazing and powerful programming language. If you already haven't, check it out; https://golang.org/
+Go is an amazing and powerful programming language. If you already haven't, check it out; https://golang.org/

